@@ -66,10 +66,16 @@ function getSolcInputForLiteral(
   return getSolcInput({ [filename]: { content: source } }, compilerOptions);
 }
 
+const LOADED_COMPILERS: { [compilerPath: string]: any } = {};
+
 /**
  * Copied from `solidity/compiler/index.ts`.
  */
 function loadCompilerSources(compilerPath: string) {
+  if (LOADED_COMPILERS[compilerPath] !== undefined) {
+    return LOADED_COMPILERS[compilerPath];
+  }
+
   const Module = module.constructor as any;
   const previousHook = Module._extensions[".js"];
 
@@ -84,6 +90,8 @@ function loadCompilerSources(compilerPath: string) {
   const loadedSolc = require(compilerPath);
 
   Module._extensions[".js"] = previousHook;
+
+  LOADED_COMPILERS[compilerPath] = loadedSolc;
 
   return loadedSolc;
 }
